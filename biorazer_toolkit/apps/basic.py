@@ -1,11 +1,10 @@
 from abc import abstractmethod
 from pathlib import Path
-import codecs
-import errno
-import logging, subprocess, selectors, pty, os, sys
-import re
+from dataclasses import dataclass
+import codecs, errno, logging, subprocess, selectors, pty, os, sys, re
 
 
+@dataclass
 class App:
     """
     Base class for all applications. Provides common methods for running subprocesses and logging.
@@ -17,21 +16,15 @@ class App:
         bin : Path
             The path to the application's executable. Rosetta has multiple executables, so this can be set to any of them to use different tools.
         logger : logging.Logger
-            Logger for the application. If not provided, a default logger will be created.
+            Logger for the application.
+            - If not provided, a default logger will be created.
+            - If a string is provided, it will be used as the logger name to create a logger.
+            - You can call set_default_logger_style() to set the default logging style, level and handlers.
     """
 
-    dir: Path
-    bin: Path
-    logger: logging.Logger
-
-    def __init__(self, app_dir=None, app_bin=None, logger=None):
-        self.dir = Path(app_dir) if app_dir else None
-        self.bin = Path(app_bin) if app_bin else None
-        self.logger = logger
-        self.__post_init__()
-        self.logger.debug(
-            f"Initialized App with dir: {self.dir}, bin: {self.bin}, logger: {self.logger}"
-        )
+    app_dir: str | Path = None
+    app_bin: str | Path = None
+    logger: logging.Logger = None
 
     def __post_init__(self):
         if isinstance(self.logger, str):
@@ -39,6 +32,11 @@ class App:
         if self.logger is None:
             self.logger = logging.getLogger(__name__)
             self.set_default_logger_style()
+        self.app_dir = Path(self.app_dir) if self.app_dir else None
+        self.app_bin = Path(self.app_bin) if self.app_bin else None
+        self.logger.debug(
+            f"Post-init App with dir: {self.app_dir}, bin: {self.app_bin}, logger: {self.logger}"
+        )
 
     def set_default_handler(
         self,
@@ -122,12 +120,12 @@ class App:
         return app
 
     @abstractmethod
-    def set_dir(self, app_dir):
-        self.dir = Path(app_dir)
+    def set_dir(self, app_dir: str | Path):
+        self.app_dir = Path(app_dir)
 
     @abstractmethod
-    def set_bin(self, app_bin):
-        self.bin = Path(app_bin)
+    def set_bin(self, app_bin: str | Path):
+        self.app_bin = Path(app_bin)
 
     @abstractmethod
     def check(self):
@@ -163,7 +161,7 @@ class App:
             - subprocess.run: Using subprocess.run to capture output.
             - subprocess.Popen: Using subprocess.Popen to capture output.
         """
-        cmd_args = [f"{self.bin}"]
+        cmd_args = [f"{self.app_bin}"]
         for arg in args:
             cmd_args.append(str(arg))
         self.logger.info(f"Running command: {' '.join(cmd_args)}")
@@ -231,7 +229,9 @@ class App:
                             remaining = line_left[key.fileobj] + remaining
                             line_left[key.fileobj] = ""
                             if remaining:
-                                normalized_line = self._normalize_log_message(remaining).strip()
+                                normalized_line = self._normalize_log_message(
+                                    remaining
+                                ).strip()
                                 if key.fileobj == master_stderr:
                                     if verbose:
                                         self.logger.error(normalized_line)
@@ -280,9 +280,9 @@ class App:
 
             if p.returncode != 0:
                 if error:
-                    raise RuntimeError(f"{self.bin} failed with error:\n{error}")
+                    raise RuntimeError(f"{self.app_bin} failed with error:\n{error}")
                 else:
-                    raise RuntimeError(f"{self.bin} failed with output\n{output}")
+                    raise RuntimeError(f"{self.app_bin} failed with output\n{output}")
 
             os.close(master_stdout)
             os.close(master_stderr)
@@ -299,11 +299,11 @@ class App:
             if result.returncode != 0:
                 if result.stderr:
                     raise RuntimeError(
-                        f"{self.bin} failed with error:\n{result.stderr}"
+                        f"{self.app_bin} failed with error:\n{result.stderr}"
                     )
                 else:
                     raise RuntimeError(
-                        f"{self.bin} failed with output\n{result.stdout}"
+                        f"{self.app_bin} failed with output\n{result.stdout}"
                     )
 
             if result.stdout:
@@ -341,9 +341,9 @@ class App:
 
             if p.returncode != 0:
                 if stderr:
-                    raise RuntimeError(f"{self.bin} failed with error:\n{stderr}")
+                    raise RuntimeError(f"{self.app_bin} failed with error:\n{stderr}")
                 else:
-                    raise RuntimeError(f"{self.bin} failed with output\n{stdout}")
+                    raise RuntimeError(f"{self.app_bin} failed with output\n{stdout}")
 
             if stdout:
                 output = stdout

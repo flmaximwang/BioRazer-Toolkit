@@ -28,3 +28,6 @@ class RosettaConfig:
 
 config = RosettaConfig()
 rosetta_config = config
+
+from .scorefile import Scorefile
+from .execution import RosettaApp

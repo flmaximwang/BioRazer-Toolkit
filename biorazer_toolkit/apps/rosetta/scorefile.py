@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
+from io import StringIO
 import pandas as pd
 
 
@@ -9,7 +10,12 @@ class Scorefile:
 
     @classmethod
     def from_sc(cls, sc_file: str | Path):
-        df = pd.read_csv(sc_file, comment="#", sep=r"\s+")
+        sc_file_str = ""
+        with open(sc_file, "r") as f:
+            for line in f:
+                if line.startswith("SCORE:"):
+                    sc_file_str += line
+        df = pd.read_csv(StringIO(sc_file_str), comment="#", sep=r"\s+")
         df = df.iloc[:, 1:]  # drop the first column which is just 'SCORE:'
         return cls(data=df)
 
