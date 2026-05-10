@@ -1,4 +1,15 @@
-__pycache__
-.vscode/
-poetry.lock
+# Project files
 test
+data
+
+# Python Cache
+__pycache__
+
+# VSCode
+.vscode/
+
+# Poetry
+poetry.lock
+
+# Rosetta
+ROSETTA_CRASH.log

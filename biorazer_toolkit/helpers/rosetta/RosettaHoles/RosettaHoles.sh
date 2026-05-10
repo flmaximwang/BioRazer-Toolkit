@@ -45,7 +45,7 @@ fi
 
 INPUT_PDB="$(cd -- "$(dirname -- "$1")" && pwd)/$(basename -- "$1")"
 OUTPUT_DIR="${2:-$(pwd)}"
-SCOREFILE="${OUTPUT_DIR}/scores.sc"
+SCOREFILE_NAME="scores.sc"
 
 if [[ ! -f "${INPUT_PDB}" ]]; then
     echo "Input PDB does not exist: ${INPUT_PDB}" >&2
@@ -64,16 +64,18 @@ fi
 
 if [[ ! -x "${DALPHABALL_BIN}" ]]; then
     echo "DAlphaBall executable is not executable: ${DALPHABALL_BIN}" >&2
-    exit 1
+    exit 2
 fi
 
 mkdir -p "${OUTPUT_DIR}"
+OUTPUT_DIR="$(cd -- "${OUTPUT_DIR}" && pwd)"
+SCOREFILE="${OUTPUT_DIR}/${SCOREFILE_NAME}"
 
 "${ROSETTA_SCRIPTS_BIN}" \
     -s "${INPUT_PDB}" \
     -parser:protocol "${XML_PATH}" \
     -out:path:all "${OUTPUT_DIR}" \
-    -out:file:scorefile "${SCOREFILE}" \
+    -out:file:scorefile "${SCOREFILE_NAME}" \
     -holes:dalphaball "${DALPHABALL_BIN}" \
     -nstruct 1
 

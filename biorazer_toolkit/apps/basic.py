@@ -46,6 +46,14 @@ class App:
         file_mode="a",
         file_encoding="utf-8",
     ):
+        """
+        Parameters
+        ----------
+        - handler_types: str or list of str or logging.Handler subclass or list of logging.Handler subclasses
+            Types of handlers to set as default. Supported string values are "StreamHandler" and "FileHandler".
+        - stream: file-like object
+            Stream to use for StreamHandler. Defaults to sys.stdout if not provided.
+        """
         # Remove existing handlers before applying new defaults.
         for handler in list(self.logger.handlers):
             self.logger.removeHandler(handler)
@@ -155,6 +163,8 @@ class App:
 
         Parameters
         ----------
+        args : list
+            List of command line arguments to pass to the application. "-s" and the input file path should not be included in one "" argument, but should be passed as separate arguments.
         mode : str
             Mode to run the subprocess.
             - pty: Pseudo-terminal mode to ensure line-buffered output.
