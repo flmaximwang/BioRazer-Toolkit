@@ -3,7 +3,7 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "biorazer-extensions"
+name = "biorazer-toolkit"
 version = "0.2.0"
 description = "This package brings about many helper functions to make using other packages easier."
 authors = [

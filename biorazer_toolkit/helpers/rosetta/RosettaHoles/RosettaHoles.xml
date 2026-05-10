@@ -1,0 +1,16 @@
+<ROSETTASCRIPTS>
+	<SCOREFXNS>
+		<ScoreFunction name="ref2015" weights="ref2015" />
+	</SCOREFXNS>
+	<FILTERS>
+		<Holes
+			name="full_pose_holes"
+			threshold="999999"
+			confidence="0"
+		/>
+	</FILTERS>
+	<PROTOCOLS>
+		<Add filter="full_pose_holes" />
+	</PROTOCOLS>
+	<OUTPUT scorefxn="ref2015" />
+</ROSETTASCRIPTS>
